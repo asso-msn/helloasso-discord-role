@@ -1,5 +1,10 @@
-client_id: xxxx
-client_secret: xxxx
-organization_slug: make-some-noise
-form_slug: adhesion-membre
-form_field_name: Tag Discord
+helloasso:
+  client_id: xxxx
+  client_secret: xxxx
+  organization_slug: make-some-noise
+  form_slug: adhesion-membre
+  form_field_name: Tag Discord
+discord:
+  token: xxxx
+  guild: xxxx
+  role: xxxx

@@ -1,4 +1,5 @@
 arrow
+discord.py
 helloasso-apiv5
 pyhumps
 pyyaml
