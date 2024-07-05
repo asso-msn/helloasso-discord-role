@@ -1,10 +1,52 @@
+import functools
+from dataclasses import dataclass
+
+import arrow
 import humps
+from arrow import Arrow
 from helloasso_api import HaApiV5
+
+from config import config
 
 
 def debug(o):
     with open("debug.json", "w") as f:
         f.write(o.text)
+
+
+def dict_by_key(iterable, key):
+    return {x[key]: x for x in iterable}
+
+
+@dataclass
+class Membership:
+    email: str
+    date: Arrow
+    custom_fields: dict
+
+    @classmethod
+    def from_helloasso_api(cls, d: dict):
+        items = dict_by_key(d["items"], "type")
+        custom_fields = items["Membership"].get("customFields")
+        custom_fields = (
+            dict_by_key(custom_fields, "name") if custom_fields else {}
+        )
+        for key in custom_fields:
+            custom_fields[key] = custom_fields[key]["answer"]
+        return cls(
+            email=d["payer"]["email"],
+            date=arrow.get(d["date"]),
+            custom_fields=custom_fields,
+        )
+
+
+@functools.cache
+def _get_client():
+    return HelloAssoAPI(
+        client_id=config["helloasso"]["client_id"],
+        client_secret=config["helloasso"]["client_secret"],
+        organization_slug=config["helloasso"]["organization_slug"],
+    )
 
 
 class HelloAssoAPI(HaApiV5):
@@ -33,7 +75,7 @@ class HelloAssoAPI(HaApiV5):
     def get_forms(self):
         return self.call(f"/organizations/{self.organization_slug}/forms")
 
-    def get_form(self, form_slug):
+    def get_form_answers(self, form_slug):
         result = []
         token = None
         while True:
@@ -59,3 +101,25 @@ class HelloAssoAPI(HaApiV5):
 
         print("Total results:", len(result))
         return result
+
+
+@functools.cache
+def get_memberships(slug=None) -> list[Membership]:
+    slug = slug or config["helloasso"]["form_slug"]
+    client = _get_client()
+    return [
+        Membership.from_helloasso_api(x) for x in client.get_form_answers(slug)
+    ]
+
+
+@functools.cache
+def get_memberships_by_email(slug=None) -> dict[str, Membership]:
+    result = {}
+    for membership in get_memberships(slug):
+        if (
+            membership.email in result
+            and membership.date < result[membership.email].date
+        ):
+            continue
+        result[membership.email] = membership
+    return result

@@ -1,10 +1,22 @@
+membership_duration_years: 1 # Duration of the membership in years
+membership_expiration_delay_months_short: 3 # Delay in months in which an expiration is still considered "short"
+
 helloasso:
   client_id: xxxx
   client_secret: xxxx
   organization_slug: make-some-noise
   form_slug: adhesion-membre
   form_field_name: Tag Discord
+
 discord:
-  token: xxxx
-  guild: xxxx
-  role: xxxx
+  dry: false # Set to true to disable Discord actions: setting roles, sending messages, etc.
+  bot_token: xxxx
+  server_id: xxxx
+  role_id: xxxx
+  delay_days: 7 # Delay in days before sending the delayed variant of the message
+  removal_message: |
+    Ton adhésion à l'association Make Some Noise a expiré, tu as donc perdu tes avantages. Tu peux renouveler ton adhésion à https://www.helloasso.com/associations/make-some-noise/adhesions/adhesion-membre
+  removal_message_delayed: |
+    Ton adhésion à l'association Make Some Noise a expiré {delay}, tu as donc perdu tes avantages. Tu peux renouveler ton adhésion à https://www.helloasso.com/associations/make-some-noise/adhesions/adhesion-membre
+  welcome_message: |
+    Merci pour ton adhésion à l'association Make Some Noise ! Tes avantages Discord ont été activés.
