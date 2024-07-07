@@ -35,6 +35,12 @@ username, it will still be properly tracked by the script. Aside from that, the
 script *should* work fine without the ability to save, but it is not the
 scenario it was designed for.
 
+## Limitations
+
+- Discord's API call to get the members of a Discord server returns chunks of
+  1000 users. Currently, no support for getting an higher members count than
+  this is implemented in this script.
+
 ## License
 
 MIT.
