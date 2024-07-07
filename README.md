@@ -34,3 +34,7 @@ file most importantly tracks Discord IDs, so if a member change their Discord
 username, it will still be properly tracked by the script. Aside from that, the
 script *should* work fine without the ability to save, but it is not the
 scenario it was designed for.
+
+## License
+
+MIT.
