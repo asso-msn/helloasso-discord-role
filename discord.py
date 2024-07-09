@@ -20,11 +20,25 @@ def dry(func):
     return wrapper
 
 
+@dry
+def send_webhook(webhook_url, content=None, embeds=None):
+    data = {"content": content}
+    if embeds:
+        data["embeds"] = embeds
+    response = requests.post(webhook_url, json=data)
+    response.raise_for_status()
+
+
+@dry
+def send_webhook_embed(webhook_url, title, content):
+    send_webhook(webhook_url, embeds=[{"title": title, "description": content}])
+
+
 class DiscordAPI:
     BASE_URL = "https://discord.com/api/v10"
 
     @classmethod
-    def call(cls, url, *args, method="GET", **kwargs):
+    def call(cls, url, *args, method="GET", ignore_errors=False, **kwargs):
         url = cls.BASE_URL + url
         response = requests.request(
             method,
@@ -34,7 +48,8 @@ class DiscordAPI:
             params=kwargs,
             headers={"Authorization": f"Bot {config['discord']['bot_token']}"},
         )
-        response.raise_for_status()
+        if not ignore_errors:
+            response.raise_for_status()
         return response
 
 
@@ -74,21 +89,25 @@ class User:
 
     @dry
     def send_dm(self, content):
-        print("Send DM")
-        print("First call, open DM:")
         response = DiscordAPI.call(
             "/users/@me/channels",
             method="POST",
             json={"recipient_id": self.id},
+            ignore_errors=True,
         )
-        print(response.json())
+        if not response.ok:
+            print(f"Failed to create DM channel with {self.username}")
+            return
         channel_id = response.json()["id"]
-        print("Second call, send DM:")
-        DiscordAPI.call(
+        response = DiscordAPI.call(
             f"/channels/{channel_id}/messages",
             method="POST",
             json={"content": content},
+            ignore_errors=True,
         )
+        if not response.ok:
+            print(f"Failed to send DM to {self.username}")
+            return
 
 
 def get_user_by_username(username) -> User:

@@ -194,6 +194,12 @@ def update_discord_roles():
             member.discord.add_role(membership_role)
             member.discord_role = True
             member.discord.send_dm(config["discord"]["welcome_message"])
+            if config["discord"]["webhook_admin_report"]:
+                discord.send_webhook_embed(
+                    config["discord"]["webhook_admin_report"],
+                    title="Member added",
+                    content=str(member),
+                )
 
         if member.is_expired and member.discord_role:
             print(f"Removing Discord role from {member}")
@@ -207,10 +213,13 @@ def update_discord_roles():
                 message = config["discord"]["removal_message_delayed"].format(
                     delay=member.expiration_date.humanize(locale="fr")
                 )
-            try:
-                member.discord.send_dm(message)
-            except Exception as e:
-                print(f"Failed to send DM to {member}: {e}")
+            member.discord.send_dm(message)
+            if config["discord"]["webhook_admin_report"]:
+                discord.send_webhook_embed(
+                    config["discord"]["webhook_admin_report"],
+                    title="Member removed",
+                    content=str(member),
+                )
 
 
 def print_report():
