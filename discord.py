@@ -30,6 +30,7 @@ class DiscordAPI:
             method,
             url,
             *args,
+            json=kwargs.pop("json", None),
             params=kwargs,
             headers={"Authorization": f"Bot {config['discord']['bot_token']}"},
         )
@@ -73,12 +74,16 @@ class User:
 
     @dry
     def send_dm(self, content):
+        print("Send DM")
+        print("First call, open DM:")
         response = DiscordAPI.call(
             "/users/@me/channels",
             method="POST",
             json={"recipient_id": self.id},
         )
+        print(response.json())
         channel_id = response.json()["id"]
+        print("Second call, send DM:")
         DiscordAPI.call(
             f"/channels/{channel_id}/messages",
             method="POST",
