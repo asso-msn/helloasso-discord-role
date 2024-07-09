@@ -193,7 +193,7 @@ def update_discord_roles():
             print(f"Adding Discord role to {member}")
             member.discord.add_role(membership_role)
             member.discord_role = True
-            member.send_dm(config["discord"]["welcome_message"])
+            member.discord.send_dm(config["discord"]["welcome_message"])
 
         if member.is_expired and member.discord_role:
             print(f"Removing Discord role from {member}")
@@ -207,7 +207,10 @@ def update_discord_roles():
                 message = config["discord"]["removal_message_delayed"].format(
                     delay=member.expiration_date.humanize(locale="fr")
                 )
-            member.discord.send_dm(message)
+            try:
+                member.discord.send_dm(message)
+            except Exception as e:
+                print(f"Failed to send DM to {member}: {e}")
 
 
 def print_report():
