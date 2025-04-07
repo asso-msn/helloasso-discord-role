@@ -1,4 +1,5 @@
 import json
+from argparse import ArgumentParser
 from dataclasses import dataclass
 
 import arrow
@@ -306,8 +307,18 @@ def print_report():
 
 
 def main():
-    refresh_users()
-    update_discord_roles()
+    parser = ArgumentParser()
+    parser.add_argument(
+        "action",
+        choices=["refresh", "discord", "all"],
+        default="all",
+        nargs="?",
+    )
+    args = parser.parse_args()
+    if args.action in ("refresh", "all"):
+        refresh_users()
+    if args.action in ("discord", "all"):
+        update_discord_roles()
     print_report()
 
 

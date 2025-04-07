@@ -1,4 +1,5 @@
 import functools
+import json
 from dataclasses import dataclass
 
 import arrow
@@ -9,9 +10,11 @@ from helloasso_api import HaApiV5
 from config import config
 
 
-def debug(o):
-    with open("debug.json", "w") as f:
-        f.write(o.text)
+def debug(o, name="debug.json"):
+    if not name.startswith("debug."):
+        name = "debug." + name
+    with open(name, "w") as f:
+        json.dump(o.json(), f, indent=2)
 
 
 def dict_by_key(iterable, key):
@@ -78,24 +81,22 @@ class HelloAssoAPI(HaApiV5):
     def get_form_answers(self, form_slug):
         result = []
         token = None
+        index = 0
         while True:
             response = self.call(
                 f"/organizations/{self.organization_slug}/forms/Membership/{form_slug}/orders",
                 with_details=True,
                 continuation_token=token,
             )
-            debug(response)
+            debug(response, name=f"orders-{index}.json")
+            index += 1
             data = response.json()
             pagination = data["pagination"]
             current_page = data["data"]
-            page_index = pagination["pageIndex"]
-            pages_total = pagination["totalPages"]
-            print(
-                f"Got {len(current_page)} results on page {page_index}/{pages_total}"
-            )
-            result.extend(current_page)
-            if page_index == pages_total:
+            if len(current_page) == 0:
+                print("No more results")
                 break
+            result.extend(current_page)
             token = pagination["continuationToken"]
             print("continuation token:", token)
 
@@ -123,3 +124,11 @@ def get_memberships_by_email(slug=None) -> dict[str, Membership]:
             continue
         result[membership.email] = membership
     return result
+
+
+if __name__ == "__main__":
+    client = _get_client()
+    # print(client.get_form_answers("adhesion-membre"))
+    # print(client.get_forms())
+    # print(get_memberships())
+    print(get_memberships_by_email())
